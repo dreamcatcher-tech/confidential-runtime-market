@@ -1,0 +1,52 @@
+version: 0.1.0
+features:
+  protocol-domain-ledger.feature:
+    module: Reality Ledger core
+    primitives: [AgentIdentity, AgentEpoch, MutationRecord, ImageStream, RuntimePolicy, HostRecord, BastionReport, HostEpoch, HostOffer, BootLeaseRequest, RuntimeClaim, RuntimeClaimClosureReceipt, StateCommitment, AttestationRecord, KMSReleaseReceipt, PaymentReceipt, ServiceOffer, ServiceReceipt, AgentRuntimeBundle, SettlementAnchor, DisputePatch]
+  ethereum-settlement-adapter.feature:
+    module: Ethereum/L2 settlement adapter
+    ethereum_contracts: [ImageRegistry, HostRegistry, HostOfferBook, DemandLeaseBook, RuntimeClaimRegistry, EpochManifestRegistry, StateRootRegistry, PaymentEscrow, AttestationArchive, DisputeRegistry]
+  runtime-marketplace.feature:
+    module: Two-sided marketplace and bundle catalog
+    primitives: [ImageStream, RuntimePolicy, HostOffer, BootLeaseRequest, RuntimeClaim, RuntimeClaimClosureReceipt, PaymentReceipt, ServiceOffer, ServiceReceipt, AgentRuntimeBundle]
+  host-bare-metal-bootstrap.feature:
+    module: Foundry bare-metal substrate
+    primitives: [HostRecord, BastionReport]
+    components: [firmware_measurement_collector, minimal_hypervisor_interface, bastion_launcher, fail_closed_offer_gate]
+  bastion-cvm.feature:
+    module: Bastion CVM host supervisor
+    primitives: [BastionReport, HostEpoch, HostOffer, BootLeaseRequest]
+    components: [bastion_attester, host_telemetry_collector, agent_cvm_supervisor, watchdog_client, kms_mesh_participant]
+  agent-cvm-base-image.feature:
+    module: Agent CVM measured base image
+    components: [attestation_agent, oci_runtime_agent, encrypted_state_mounter, epoch_committer, shutdown_quiescer]
+  oci-workload-packaging.feature:
+    module: OCI workload to CVM execution path
+    default_path: generic_measured_guest_pulls_oci_inside_confidential_boundary
+    fallback_path: converted_bootable_vm_disk_for_appliance_workloads
+  phone-kms-unlock.feature:
+    module: Phone/KMS scoped release
+    components: [phone_app, passkey_or_device_key, custom_kbs, quorum_kms_mesh, release_receipt_writer]
+  state-epochs-and-storage.feature:
+    module: State roots and encrypted storage
+    storage_candidates: [GraphFS, TigrisFS, object_store_snapshots, network_block_store, dm_crypt, fscrypt]
+  attestation-archive-and-watchdog.feature:
+    module: Evidence archive and watchdog mesh
+    components: [attestation_archive, verifier_registry, watchdog_reports, reputation_analytics]
+  enterprise-controlled-hosts-and-billing.feature:
+    module: Controlled hosts and fiat bridge
+    components: [allowed_host_set, card_invoice_billing_bridge, stable_credit_escrow, private_fleet_comparison]
+  reconciliation-invariants.feature:
+    module: Cross-spec consistency checks
+    primitives: [all]
+implementation_phases:
+  phase_0_specs:
+    goal: Complete feature specs, manifests, and ADRs.
+  phase_1_private_reality_ledger:
+    goal: Implement primitive schemas and GraphFS/internal append-only ledger without Ethereum dependency.
+  phase_2_attested_runtime_poc:
+    goal: Boot one Bastion-like supervisor and one Agent CVM, record attestation and state root, phone/KMS unlock.
+  phase_3_l2_anchor:
+    goal: Publish Reality Ledger roots and escrow receipts through Ethereum/L2 adapter.
+  phase_4_market:
+    goal: Add HostOffer, BootLeaseRequest auto-claim, spot eviction, and enterprise controlled-host mode.

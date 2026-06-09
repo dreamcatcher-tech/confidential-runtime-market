@@ -1,0 +1,29 @@
+version: 0.1.0
+open_questions:
+  - id: first_runtime_target
+    question: Is the first workload a Dreamcatcher/Ark personal agent runtime or a general confidential VM marketplace workload?
+    owner: product
+  - id: first_attestation_stack
+    question: Which MVP attestation target should be used first: local SNP bare metal, Google Confidential Space, Azure MAA/SKR, AWS SNP, or CoCo Trustee on Kata?
+    owner: platform
+  - id: graphfs_ledger_schema
+    question: What exact canonical serialization and digest scheme should Reality Ledger primitives use?
+    owner: protocol
+  - id: ethereum_scope
+    question: Which roots and receipts are worth writing to Ethereum/L2 in the first adapter?
+    owner: protocol
+  - id: bastion_control_surfaces
+    question: Which host devices and APIs can safely be delegated to Bastion CVM, and which must stay in Foundry substrate?
+    owner: host
+  - id: spot_eviction_state_loss
+    question: What grace period and final-state proof make spot eviction safe enough for agents?
+    owner: marketplace
+  - id: unlock_recovery_tiers
+    question: Which recovery tiers use Apple/Google passkeys, hardware keys, threshold shares, or human trustee ceremonies?
+    owner: security
+  - id: enterprise_billing_bridge
+    question: Should managed billing settle as stablecoin escrow, internal stable-credit ledger, invoice receipts, or all three?
+    owner: billing
+  - id: oci_runtime_choice
+    question: Is the first implementation Kata/Confidential Containers, Firecracker-containerd, cloud provider Confidential Space, or a custom QEMU microVM path?
+    owner: platform

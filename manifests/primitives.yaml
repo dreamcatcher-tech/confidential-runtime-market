@@ -1,0 +1,82 @@
+version: 0.1.0
+name: confidential-runtime-market-primitives
+canonical_ledger: RealityLedger
+settlement_adapters:
+  - ethereum_l2
+  - ethereum_l1_anchor
+  - graphfs_app_chain
+  - internal_fiat_ledger
+naming:
+  host_bootstrap: Foundry substrate
+  host_supervisor_cvm: Bastion CVM
+  workload_cvm: Agent CVM
+primitive_invariants:
+  - one_live_agent_identity_to_one_active_runtime_claim
+  - one_active_runtime_claim_to_one_active_agent_cvm
+  - unlock_requires_latest_state_or_explicit_rollback_policy
+  - chain_layers_store_commitments_not_secrets
+  - bastion_supervises_host_agent_cvm_runs_user_workload
+primitives:
+  AgentIdentity:
+    purpose: Stable logical identity of a user agent.
+    required_fields: [agent_id, owner_id, public_identity_key_hash, recovery_policy_hash, current_runtime_claim_id, latest_epoch_id]
+  AgentEpoch:
+    purpose: Monotonic state/mutation epoch for one AgentIdentity.
+    required_fields: [epoch_id, agent_id, previous_state_root, new_state_root, runtime_claim_id, writer_attestation_record_id, mutation_receipt_root, timestamp]
+  MutationRecord:
+    purpose: Proposed, approved, denied, executed, or cancelled external side-effect attached to an AgentEpoch.
+    required_fields: [mutation_id, agent_id, epoch_id, kind, target_ref_hash, approval_policy_hash, approval_receipt_hash, execution_receipt_hash, status]
+  ImageStream:
+    purpose: Publisher-managed stream of allowed OCI workload digests and policy digests.
+    required_fields: [image_stream_id, publisher_id, oci_digest, runtime_policy_digest, valid_from, valid_until, signature]
+  RuntimePolicy:
+    purpose: Rules for image rollout, rollback, attestation requirements, host constraints, and unlock authority.
+    required_fields: [policy_digest, allowed_tee_types, allowed_guest_digests, allowed_oci_digests, rollback_policy, unlock_policy_hash]
+  HostRecord:
+    purpose: Host/operator identity, stake, endpoints, hardware class, and admission status.
+    required_fields: [host_id, operator_id, endpoint_refs, tee_capabilities, stake_ref, admission_policy_hash]
+  BastionReport:
+    purpose: Attested host supervisor evidence and health summary.
+    required_fields: [bastion_id, host_id, bastion_image_digest, bastion_attestation_record_id, hardware_profile_hash, optional_tpm_evidence_hash, health_summary_root, capacity_summary]
+  HostEpoch:
+    purpose: Batched host-level operational segment for Bastion reports, health records, peer measurements, offers, and dispute-relevant telemetry.
+    required_fields: [host_epoch_id, host_id, bastion_report_id, previous_host_root, host_root, heartbeat_root, offer_root, telemetry_root, timestamp]
+  HostOffer:
+    purpose: Supply-side pre-warmed Agent CVM offer.
+    required_fields: [offer_id, host_id, bastion_report_id, image_stream_id, oci_digest, agent_cvm_attestation_record_id, vm_transport_pubkey_hash, price_terms, health_summary_root, expiry]
+  BootLeaseRequest:
+    purpose: Demand-side prepaid requirement for image boot or runtime assignment.
+    required_fields: [request_id, requester_id, agent_id, image_stream_id_or_oci_digest, attestation_policy_hash, state_id, max_price, prepaid_budget_ref, desired_duration, spot_policy_hash, allowed_host_predicate_hash, unlock_policy_commitment_hash]
+  RuntimeClaim:
+    purpose: Accepted mapping between AgentIdentity, host, Agent CVM, image, state, and price terms.
+    required_fields: [claim_id, agent_id, source_offer_or_request_id, host_id, bastion_report_id, agent_cvm_attestation_record_id, vm_transport_pubkey_hash, state_id, state_commitment_id, price_terms, status]
+  RuntimeClaimClosureReceipt:
+    purpose: Append-only close, cutover, eviction, failure, retirement, or migration receipt for a RuntimeClaim.
+    required_fields: [closure_receipt_id, claim_id, agent_id, close_reason, final_state_commitment_id, successor_claim_id, payment_receipt_id, dispute_ref, timestamp]
+  StateCommitment:
+    purpose: Public anti-rollback commitment to encrypted state.
+    required_fields: [state_commitment_id, agent_id, state_id, version, root_hash, previous_root_hash, writer_claim_id, timestamp]
+  AttestationRecord:
+    purpose: Permanent hash/pointer for Bastion, Agent CVM, TPM, provider, or verifier evidence.
+    required_fields: [attestation_record_id, attestation_hash, attestation_type, subject_id, image_digest, policy_digest, transport_pubkey_hash, verifier_signature_hash, evidence_pointer, timestamp]
+  KMSReleaseReceipt:
+    purpose: Redacted receipt for a phone/KMS scoped unlock release.
+    required_fields: [release_receipt_id, claim_id, agent_id, state_commitment_id, attestation_record_id, unlock_policy_hash, approver_proof_hash, expiry, ciphertext_hash]
+  PaymentReceipt:
+    purpose: Payment, refund, escrow, payout, or stable-credit settlement event.
+    required_fields: [payment_receipt_id, claim_id, payer_id, payee_id, asset_or_credit, amount, window, status]
+  ServiceOffer:
+    purpose: Optional marketplace SKU for gateway, browser, model/API tokens, or external service credits.
+    required_fields: [service_offer_id, provider_kind, sku_or_capability, public_terms_hash, price_terms, metering_policy_hash, delivery_policy]
+  ServiceReceipt:
+    purpose: Metering, delivery, refund, dispute, or consumption commitment for a service entitlement attached to an AgentRuntimeBundle.
+    required_fields: [service_receipt_id, bundle_id, service_offer_id, runtime_claim_id, usage_commitment_root, metering_window, settlement_status]
+  AgentRuntimeBundle:
+    purpose: Runtime lease plus service entitlements for a complete agent operating environment.
+    required_fields: [bundle_id, agent_id, runtime_claim_id, state_epoch_id, service_credit_refs, unlock_policy_hash]
+  SettlementAnchor:
+    purpose: Adapter publication of Reality Ledger batch roots, payment state, dispute roots, or attestation archive roots.
+    required_fields: [anchor_id, adapter_id, batch_root, included_primitive_types, block_or_ledger_ref, dispute_window]
+  DisputePatch:
+    purpose: Challenge, correction, objective-fault evidence, or appeal record.
+    required_fields: [dispute_id, target_primitive_id, evidence_root, dispute_type, opened_by, status, resolution_ref]
