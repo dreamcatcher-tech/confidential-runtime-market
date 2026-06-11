@@ -14,12 +14,38 @@ primitive_invariants:
   - one_live_agent_identity_to_one_active_runtime_claim
   - one_active_runtime_claim_to_one_active_agent_cvm
   - unlock_requires_latest_state_or_explicit_rollback_policy
+  - user_recovery_tier_is_explicit_and_signed
+  - state_vault_can_hold_root_dek_so_agent_cvm_gets_scoped_access
   - chain_layers_store_commitments_not_secrets
   - bastion_supervises_host_agent_cvm_runs_user_workload
 primitives:
   AgentIdentity:
     purpose: Stable logical identity of a user agent.
     required_fields: [agent_id, owner_id, public_identity_key_hash, recovery_policy_hash, current_runtime_claim_id, latest_epoch_id]
+  UserAuthority:
+    purpose: User-controlled authority handle for phones, passkeys, wallets, hardware keys, recovery phrases, server escrow, or trustee quorums.
+    required_fields: [authority_id, agent_id, owner_id, authority_class, public_key_or_address_hash, recovery_scope, status, created_epoch_id]
+  UnlockPolicy:
+    purpose: Deterministic threshold and freshness rules for runtime unlock, StateVault access, recovery enrollment, export, and revocation.
+    required_fields: [unlock_policy_hash, agent_id, required_authority_classes, threshold_rule, freshness_window, allowed_actions, revocation_root]
+  RecoveryEnrollment:
+    purpose: Signed enrollment, replacement, downgrade, upgrade, or revocation of user recovery authorities.
+    required_fields: [recovery_enrollment_id, agent_id, previous_policy_hash, new_policy_hash, authority_refs, approval_proof_hash, status, timestamp]
+  WrappedDEKRecord:
+    purpose: Commitment to a DEK wrapper, threshold share, platform wrap, wallet-gated wrap, or vault-held secret without revealing key material.
+    required_fields: [wrapped_dek_record_id, agent_id, state_id, wrapping_authority_id, custody_mode, ciphertext_hash, policy_hash, version]
+  StateVaultRecord:
+    purpose: Attested storage/vault service identity and custody policy for encrypted state and DEK shares.
+    required_fields: [vault_id, operator_id, attestation_record_id, custody_policy_hash, storage_root, endpoint_ref_hash, status]
+  StateVaultAccessLease:
+    purpose: Scoped data-access lease allowing an Agent CVM to read, write, decrypt, or stream specific state without durable root DEK custody.
+    required_fields: [lease_id, vault_id, claim_id, agent_id, state_commitment_id, scope_hash, expiry, approver_proof_hash, receipt_hash]
+  DataExportReceipt:
+    purpose: Auditable user exit/export event for encrypted data bundles or DEK rewraps.
+    required_fields: [export_receipt_id, agent_id, state_id, export_bundle_hash, authority_proof_hash, destination_key_hash, timestamp]
+  VaultCustodyReceipt:
+    purpose: Source/destination custody transfer, closeout, or rotation receipt for StateVault-held DEK records.
+    required_fields: [custody_receipt_id, agent_id, state_id, source_vault_id, destination_vault_id, wrapped_dek_record_id, status, timestamp]
   AgentEpoch:
     purpose: Monotonic state/mutation epoch for one AgentIdentity.
     required_fields: [epoch_id, agent_id, previous_state_root, new_state_root, runtime_claim_id, writer_attestation_record_id, mutation_receipt_root, timestamp]
@@ -30,8 +56,8 @@ primitives:
     purpose: Publisher-managed stream of allowed OCI workload digests and policy digests.
     required_fields: [image_stream_id, publisher_id, oci_digest, runtime_policy_digest, valid_from, valid_until, signature]
   RuntimePolicy:
-    purpose: Rules for image rollout, rollback, attestation requirements, host constraints, and unlock authority.
-    required_fields: [policy_digest, allowed_tee_types, allowed_guest_digests, allowed_oci_digests, rollback_policy, unlock_policy_hash]
+    purpose: Rules for image rollout, rollback, attestation requirements, host constraints, StateVault custody, and unlock authority.
+    required_fields: [policy_digest, allowed_tee_types, allowed_guest_digests, allowed_oci_digests, rollback_policy, unlock_policy_hash, state_vault_policy_hash]
   HostRecord:
     purpose: Host/operator identity, stake, endpoints, hardware class, and admission status.
     required_fields: [host_id, operator_id, endpoint_refs, tee_capabilities, stake_ref, admission_policy_hash]
@@ -60,8 +86,8 @@ primitives:
     purpose: Permanent hash/pointer for Bastion, Agent CVM, TPM, provider, or verifier evidence.
     required_fields: [attestation_record_id, attestation_hash, attestation_type, subject_id, image_digest, policy_digest, transport_pubkey_hash, verifier_signature_hash, evidence_pointer, timestamp]
   KMSReleaseReceipt:
-    purpose: Redacted receipt for a phone/KMS scoped unlock release.
-    required_fields: [release_receipt_id, claim_id, agent_id, state_commitment_id, attestation_record_id, unlock_policy_hash, approver_proof_hash, expiry, ciphertext_hash]
+    purpose: Redacted receipt for a phone/KMS/StateVault scoped unlock or access release.
+    required_fields: [release_receipt_id, claim_id, agent_id, state_commitment_id, attestation_record_id, unlock_policy_hash, approver_proof_hash, expiry, ciphertext_hash, access_lease_id]
   PaymentReceipt:
     purpose: Payment, refund, escrow, payout, or stable-credit settlement event.
     required_fields: [payment_receipt_id, claim_id, payer_id, payee_id, asset_or_credit, amount, window, status]

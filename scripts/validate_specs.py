@@ -8,7 +8,7 @@ FEATURE_DIR = ROOT / "features"
 ALLOWED_TAGS = {
     "@protocol", "@market", "@ethereum", "@host", "@cvm", "@unlock",
     "@state", "@attestation", "@enterprise", "@billing", "@packaging",
-    "@reconciliation", "@mvp",
+    "@reconciliation", "@recovery", "@wallet", "@mvp",
 }
 REQUIRED_FEATURES = {
     "protocol-domain-ledger.feature",
@@ -18,14 +18,18 @@ REQUIRED_FEATURES = {
     "bastion-cvm.feature",
     "agent-cvm-base-image.feature",
     "oci-workload-packaging.feature",
+    "user-authority-and-recovery.feature",
     "phone-kms-unlock.feature",
+    "state-vault-mesh.feature",
     "state-epochs-and-storage.feature",
     "attestation-archive-and-watchdog.feature",
     "enterprise-controlled-hosts-and-billing.feature",
     "reconciliation-invariants.feature",
 }
 REQUIRED_PRIMITIVES = [
-    "AgentIdentity", "AgentEpoch", "MutationRecord", "ImageStream", "RuntimePolicy", "HostRecord",
+    "AgentIdentity", "UserAuthority", "UnlockPolicy", "RecoveryEnrollment", "WrappedDEKRecord",
+    "StateVaultRecord", "StateVaultAccessLease", "DataExportReceipt", "VaultCustodyReceipt",
+    "AgentEpoch", "MutationRecord", "ImageStream", "RuntimePolicy", "HostRecord",
     "BastionReport", "HostEpoch", "HostOffer", "BootLeaseRequest", "RuntimeClaim",
     "RuntimeClaimClosureReceipt", "StateCommitment", "AttestationRecord", "KMSReleaseReceipt",
     "PaymentReceipt", "ServiceOffer", "ServiceReceipt", "AgentRuntimeBundle", "SettlementAnchor",
@@ -77,7 +81,7 @@ def main() -> None:
         fail("missing primitives: " + ", ".join(missing_primitives))
 
     reconciliation = (ROOT / "docs" / "spec-reconciliation.md").read_text(encoding="utf-8")
-    required_terms = ["Reality Ledger", "Ethereum", "Foundry", "Bastion", "Agent CVM", "BootLeaseRequest", "HostOffer", "RuntimeClaim", "StateCommitment"]
+    required_terms = ["Reality Ledger", "Ethereum", "Foundry", "Bastion", "Agent CVM", "BootLeaseRequest", "HostOffer", "RuntimeClaim", "StateCommitment", "UserAuthority", "StateVault"]
     for term in required_terms:
         if term not in reconciliation:
             fail(f"spec reconciliation missing term: {term}")

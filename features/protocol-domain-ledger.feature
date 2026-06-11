@@ -4,7 +4,7 @@ Feature: Provider-neutral Reality Ledger protocol primitives
   Ethereum, an L2, a GraphFS app-chain, or an internal ledger can implement them.
 
   Background:
-    Given the protocol defines AgentIdentity, AgentEpoch, MutationRecord, ImageStream, RuntimePolicy, HostRecord, BastionReport, HostEpoch, HostOffer, BootLeaseRequest, RuntimeClaim, RuntimeClaimClosureReceipt, StateCommitment, AttestationRecord, KMSReleaseReceipt, PaymentReceipt, ServiceOffer, ServiceReceipt, AgentRuntimeBundle, SettlementAnchor, and DisputePatch primitives
+    Given the protocol defines AgentIdentity, UserAuthority, UnlockPolicy, RecoveryEnrollment, WrappedDEKRecord, StateVaultRecord, StateVaultAccessLease, DataExportReceipt, VaultCustodyReceipt, AgentEpoch, MutationRecord, ImageStream, RuntimePolicy, HostRecord, BastionReport, HostEpoch, HostOffer, BootLeaseRequest, RuntimeClaim, RuntimeClaimClosureReceipt, StateCommitment, AttestationRecord, KMSReleaseReceipt, PaymentReceipt, ServiceOffer, ServiceReceipt, AgentRuntimeBundle, SettlementAnchor, and DisputePatch primitives
     And each primitive has a content-addressed digest and canonical serialization
     And each primitive can be recorded in a provider-neutral Reality Ledger before any settlement adapter is chosen
 
@@ -17,7 +17,7 @@ Feature: Provider-neutral Reality Ledger protocol primitives
     And any previous active RuntimeClaim is closed by a cutover, eviction, failure, or explicit retirement receipt
 
   Scenario: Chain adapters publish commitments rather than define the domain model
-    Given the Reality Ledger has a batch of ImageStream, HostOffer, BootLeaseRequest, RuntimeClaim, RuntimeClaimClosureReceipt, StateCommitment, AttestationRecord, KMSReleaseReceipt, PaymentReceipt, ServiceReceipt, and DisputePatch objects
+    Given the Reality Ledger has a batch of UserAuthority, UnlockPolicy, RecoveryEnrollment, WrappedDEKRecord, StateVaultRecord, StateVaultAccessLease, DataExportReceipt, VaultCustodyReceipt, ImageStream, HostOffer, BootLeaseRequest, RuntimeClaim, RuntimeClaimClosureReceipt, StateCommitment, AttestationRecord, KMSReleaseReceipt, PaymentReceipt, ServiceReceipt, and DisputePatch objects
     When a Settlement Adapter publishes a batch root
     Then the adapter records the batch digest, settlement metadata, and dispute window
     And the underlying domain objects remain interpretable without Ethereum-specific storage layout
@@ -35,3 +35,11 @@ Feature: Provider-neutral Reality Ledger protocol primitives
     Then the action is represented as a MutationRecord referenced by an AgentEpoch
     And the mutation requires orchestrator, phone, or policy approval before external execution
     And failover resumes only from the latest committed epoch root or an explicitly approved rollback point
+
+
+  Scenario: User authority and storage custody are ledger primitives
+    Given a user selects local-only, multi-device, passkey-assisted, wallet-gated, or threshold recovery
+    When the choice is committed
+    Then the Reality Ledger records UserAuthority, UnlockPolicy, and RecoveryEnrollment objects
+    And encrypted storage custody is represented by WrappedDEKRecord, StateVaultRecord, StateVaultAccessLease, DataExportReceipt, and VaultCustodyReceipt objects
+    And a settlement adapter can anchor those commitments without learning secrets

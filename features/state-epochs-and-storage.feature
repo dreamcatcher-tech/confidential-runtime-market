@@ -3,9 +3,9 @@ Feature: Agent epochs, encrypted storage, and anti-rollback
   State continuity is enforced through monotonic commitments, not by trusting hosts.
 
   Background:
-    Given each AgentIdentity has encrypted state stored in object storage, GraphFS/TigrisFS, a network block store, or another content-addressed substrate
+    Given each AgentIdentity has encrypted state stored in object storage, GraphFS/TigrisFS, a network block store, StateVault, or another content-addressed substrate
     And each state update produces a StateCommitment root
-    And latest state is checked before unlock
+    And latest state is checked before unlock or state-access lease
 
   Scenario: AgentEpoch records state root and runtime identity
     Given an Agent CVM has unlocked state for an active RuntimeClaim
@@ -31,3 +31,11 @@ Feature: Agent epochs, encrypted storage, and anti-rollback
     When the Agent CVM is reachable during the grace period
     Then it must produce a final StateCommitment and close receipt before the lease closes cleanly
     And failure to produce one becomes dispute or risk evidence for that host
+
+
+  Scenario: StateVault custody separates root DEK from working runtime
+    Given StateVault has custody of WrappedDEKRecord or DEK threshold shares
+    When an Agent CVM needs state access for an active RuntimeClaim
+    Then the Agent CVM receives only a scoped StateVaultAccessLease or object lease
+    And StateCommitment updates still record the resulting state root
+    And the root DEK can remain inside the StateVault mesh unless export policy is satisfied

@@ -33,3 +33,18 @@ Feature: Cross-spec reconciliation invariants
     When the claim closes
     Then PaymentEscrow, RuntimeClaimRegistry, StateRootRegistry, KMSReleaseReceipt, and RuntimeClaimClosureReceipt agree on final status
     And a replacement claim cannot unlock before the latest state root is unambiguous
+
+
+  Scenario: User-selected recovery tier reconciles with vault custody
+    Given a user chooses local-only, platform-passkey, wallet-gated, multi-device, hardware-key, or threshold recovery
+    When phone, StateVault, or KMS evaluates a RuntimeClaim
+    Then the selected UnlockPolicy determines which UserAuthority proofs are sufficient
+    And StateVaultAccessLease issuance never bypasses the RecoveryPolicy
+    And public settlement sees only commitments and receipts
+
+  Scenario: Working Agent CVM does not need durable DEK custody
+    Given StateVault mesh holds the root storage DEK or threshold shares
+    When an Agent CVM reads or writes state
+    Then the Agent CVM receives scoped data access rather than a portable root DEK by default
+    And user export still requires phone or recovery authority proof
+    And the design remains compatible with an opt-in local-DEK portability tier
