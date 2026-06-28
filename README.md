@@ -10,9 +10,39 @@ A provider-neutral **Reality Ledger** records user authority, recovery policy, a
 
 ## Current status
 
-- Status: specification scaffold, no production code yet.
-- Initial scope: feature specs, manifests, ADRs, and reconciliation checks.
+- Status: v0 executable vertical-slice scaffold added on top of the feature specs.
+- Initial scope: feature specs, manifests, ADRs, reconciliation checks, Solidity settlement adapter, Hardhat tests/deploy script, and GitHub Pages demo UI.
 - Repo created: 2026-06-10 NZT.
+
+## v0 ARK Runtime Orchestrator implementation
+
+The v0 implementation lives in:
+
+```text
+contracts/ARKRuntimeOrchestrator.sol   Ethereum/L2 settlement adapter
+scripts/deploy.cjs                     deploy + seed demo receipts
+test/ARKRuntimeOrchestrator.test.cjs   contract flow tests
+site/                                  GitHub Pages UI
+scripts/validate_site.py               deterministic site validator
+docs/v0-vertical-slice.md              executable slice notes
+```
+
+It records public commitments for ARK birth certificates/medallions, controlled-host boot leases, Agent-CVM runtime claims, StateVault release receipts, state roots, and closure receipts. It does not store secrets or raw private state.
+
+Run lightweight local validation with:
+
+```bash
+python3 scripts/validate_specs.py
+python3 scripts/validate_site.py
+```
+
+Run the Ethereum harness on a larger/ephemeral worker when possible:
+
+```bash
+npm ci
+npm test
+DEPLOY_DEMO=1 npx hardhat run scripts/deploy.cjs --network hardhat
+```
 
 ## Core invariants
 

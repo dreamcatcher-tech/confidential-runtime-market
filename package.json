@@ -1,0 +1,23 @@
+{
+  "name": "confidential-runtime-market",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-neutral Reality Ledger and Ethereum/L2 v0 vertical slice for ARK confidential runtime orchestration.",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:localhost": "hardhat run scripts/deploy.cjs --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.cjs --network sepolia",
+    "deploy:base-sepolia": "hardhat run scripts/deploy.cjs --network baseSepolia",
+    "validate:specs": "python3 scripts/validate_specs.py",
+    "validate:site": "python3 scripts/validate_site.py",
+    "validate": "python3 scripts/validate_specs.py && python3 scripts/validate_site.py"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "chai": "^4.5.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.19"
+  }
+}
