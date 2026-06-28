@@ -103,34 +103,53 @@ fly://ark-waiting-vm-0628112126/e825416fd64728
 - Browser desktop QA: legible; no obvious clipping, overlap, or horizontal overflow.
 - Playwright tablet/mobile full-page QA: legible; no page-level horizontal overflow or overlap. Minor issue: long hex strings wrap awkwardly on mobile, but remain contained.
 
+
+
+## Public Sepolia deployment
+
+Completed after generating and funding a fresh deployer through the Sepolia PoW faucet.
+
+### Faucet funding
+
+- Deployer address: `0xbE46900C1Fb37efdea9dC75400fDdEa2bf7Fa5E7`
+- Faucet: https://sepolia-faucet.pk910.de/
+- Faucet session: `e398b57d-d99e-4ad6-a777-cdd2d9cc367f`
+- Faucet tx: `0xb1af616e58ec2a40356d7b5118c15d6e2ccc7a9af344d8277c672c38d44b1b30`
+- Faucet block: `11158908`
+- Amount: `0.411 SepETH`
+
+### Contract deployment
+
+- Network: `sepolia`
+- Chain ID: `11155111`
+- Contract: `0xf32ac756ea8f12c6B7DdDb3525ff8EaA2349aB64`
+- Deploy tx: `0x196e6b7f73e561edc95a0adfab024432f3c88fb33a074049c104f1ec5dca9eb0`
+- Deploy block: `11158923`
+- Explorer: https://sepolia.etherscan.io/address/0xf32ac756ea8f12c6B7DdDb3525ff8EaA2349aB64
+- On-chain verification: `eth_getCode` returned `11221` bytes and deploy tx receipt status `0x1`.
+
+### Demo seed transactions
+
+- Register host tx: `0xa783afb6b7845401da8d8b51427011177c47a6ef583acbbc27ae0ab43783a6a2`
+- Publish image tx: `0xc0cac8973b0c9e001a75b37b305435bb70399b4a84a656b49de75bd30d750b0c`
+- Mint birth certificate tx: `0xaf899846a995e1ad1f87f1496d2fa00369a5391987d7921cb646036e48e78ca1`
+- Post boot lease tx: `0x8b71e8b0ac35e5c96ea24d21898b447dd58909612d6c28d778c9dbf773429668`
+- Claim boot lease tx: `0x942b6d9d92d90b0139fd095656200773eb4534d5bd15f0f5cdf1cc8c9c5ec214`
+- Record release receipt tx: `0x40b0c1b89b311e2fd1b9ebeadc3b5406e3af1adec7357623e59a36fe4eda9b75`
+- Commit state tx: `0xe42a9fef25a5d448dfc378c2b203e57e7373279ceba70c34b95a9dc14f8921e8`
+
+### Sepolia deploy worker proof
+
+Heavy Hardhat deploy/test work ran on a second disposable Fly worker.
+
+- Deploy worker app: `ark-eth-deploy-0628143535`
+- Deploy worker Machine: `683993ec531448`
+- Test output: `5 passing (1s)`
+- Cleanup: `flyctl apps destroy ark-eth-deploy-0628143535 --yes`
+- Destroy verification: `flyctl status --app ark-eth-deploy-0628143535` returned app-not-found.
+
+The public GitHub Pages UI now reads `site/config.json`, which points at this Sepolia contract and sample IDs.
+
 ## Public testnet deployment status
 
-Blocked pending deploy target/custody input.
-
-I found GitHub and Fly credentials, but no usable Ethereum testnet deploy set in the environment:
-
-- missing funded deployer key variable such as `DEPLOYER_PRIVATE_KEY` / `WALLET_PRIVATE_KEY`;
-- missing testnet RPC variable such as `SEPOLIA_RPC_URL` or `BASE_SEPOLIA_RPC_URL`;
-- no evidence of testnet funds for a deployer account.
-
-The repo is ready for either:
-
-```bash
-DEPLOYER_PRIVATE_KEY=... SEPOLIA_RPC_URL=... DEPLOY_DEMO=1 npm run deploy:sepolia
-```
-
-or:
-
-```bash
-DEPLOYER_PRIVATE_KEY=... BASE_SEPOLIA_RPC_URL=... DEPLOY_DEMO=1 npm run deploy:base-sepolia
-```
-
-Running this will update `deployments/<network>.json`, `deployments/latest.json`, `site/config.json`, and the live Pages UI after commit/push.
-
-## Remaining approval needed
-
-Choose one:
-
-1. Provide a funded Sepolia/Base Sepolia deployer key and RPC URL through the approved secret path; or
-2. Ask Hermes to generate a fresh deployer address, you fund it with testnet ETH, then Hermes deploys; or
-3. Accept the current hardhat-devnet + GitHub Pages proof as v0 and schedule public-testnet deployment as the next goal.
+Completed on Sepolia. The committed `deployments/sepolia.json`, `deployments/latest.json`, and `site/config.json` contain public deployment receipts only. The deployer private key remains outside the repo at `/opt/data/.secrets/ark-runtime-orchestrator-deployer.env` with mode `600`.
