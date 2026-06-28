@@ -150,6 +150,22 @@ Heavy Hardhat deploy/test work ran on a second disposable Fly worker.
 
 The public GitHub Pages UI now reads `site/config.json`, which points at this Sepolia contract and sample IDs.
 
+### Source verification
+
+Completed source-code verification for the deployed Sepolia contract.
+
+- Etherscan code tab: https://sepolia.etherscan.io/address/0xf32ac756ea8f12c6B7DdDb3525ff8EaA2349aB64#code
+- Etherscan status: `Source Code Verified — Exact Match`
+- Contract name: `ARKRuntimeOrchestrator`
+- Compiler: `v0.8.24+commit.e11b9ed9`
+- Optimizer: enabled, `200` runs
+- EVM version: `paris`
+- Source format: Solidity Standard JSON input
+- Sourcify exact-match job: `a5e1a4cc-9ab0-4268-8314-d03366e2ab52`
+- Sourcify verified-at: `2026-06-28T21:18:42Z`
+- Sourcify match: creation `exact_match`, runtime `exact_match`
+- Sourcify returned external Etherscan verification ID: `5a3fdjvnumcxwaa4hawgyzayakmnwczk8xrpa31hjnmxkfybin`
+
 ## Public testnet deployment status
 
 Completed on Sepolia. The committed `deployments/sepolia.json`, `deployments/latest.json`, and `site/config.json` contain public deployment receipts only. The deployer private key remains outside the repo at `/opt/data/.secrets/ark-runtime-orchestrator-deployer.env` with mode `600`.
