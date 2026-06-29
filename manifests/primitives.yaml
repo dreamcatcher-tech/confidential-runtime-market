@@ -19,6 +19,9 @@ primitive_invariants:
   - chain_layers_store_commitments_not_secrets
   - bastion_supervises_host_agent_cvm_runs_user_workload
 primitives:
+  BirthCertificate:
+    purpose: ERC-721-compatible public birth record for an agent identity, lineage, desire policy, and metadata commitment.
+    required_fields: [token_id, agent_id, parent_agent_id, lineage_root, desire_policy_hash, birth_metadata_hash, owner]
   AgentIdentity:
     purpose: Stable logical identity of a user agent.
     required_fields: [agent_id, owner_id, public_identity_key_hash, recovery_policy_hash, current_runtime_claim_id, latest_epoch_id]

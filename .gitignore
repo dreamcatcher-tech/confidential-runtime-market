@@ -1,6 +1,6 @@
 node_modules/
 cache/
-artifacts/build-info/
+artifacts/
 .env
 .env.*
 !.env.example

@@ -3,25 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ARK Runtime Orchestrator</title>
+  <title>ARK Runtime Marketplace</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <main>
     <section class="hero">
       <p class="eyebrow">Ethereum/L2-settled Reality Ledger demo</p>
-      <h1>ARK Runtime Orchestrator</h1>
-      <p class="lede">A v0 settlement adapter that records ARK birth certificates, controlled-host boot leases, runtime claims, StateVault release receipts, and monotonic state roots without putting secrets on-chain.</p>
+      <h1>ARK Runtime Marketplace</h1>
+      <p class="lede">A v0 split-contract adapter: a standard ERC-721 ARK birth certificate records agent identity commitments, while a compatible runtime marketplace records controlled-host boot requests, runtime claims, StateVault release receipts, and monotonic state roots without putting secrets on-chain.</p>
       <div class="actions">
         <button id="connectWallet">Connect wallet</button>
-        <a id="explorerLink" class="button secondary" href="#" target="_blank" rel="noreferrer">Open contract</a>
+        <a id="birthExplorerLink" class="button secondary" href="#" target="_blank" rel="noreferrer">Open birth certificate</a>
+        <a id="marketplaceExplorerLink" class="button secondary" href="#" target="_blank" rel="noreferrer">Open marketplace</a>
       </div>
       <div id="status" class="status">Loading contract config…</div>
     </section>
 
     <section class="grid">
       <article class="card">
-        <h2>Contract</h2>
+        <h2>Contracts</h2>
         <dl id="contractFacts"></dl>
       </article>
       <article class="card">
@@ -30,8 +31,9 @@
       </article>
       <article class="card wide">
         <h2>Read from chain</h2>
-        <p>Use the deployed config or paste another contract address. MetaMask is only required for live chain reads/writes through the browser provider.</p>
-        <label>Contract address <input id="contractAddress" /></label>
+        <p>Use the deployed config or paste another address pair. MetaMask is only required for live chain reads/writes through the browser provider.</p>
+        <label>Birth certificate address <input id="birthAddress" /></label>
+        <label>Marketplace address <input id="marketplaceAddress" /></label>
         <label>Agent ID <input id="agentId" /></label>
         <label>Claim ID <input id="claimId" /></label>
         <div class="actions compact">
@@ -45,11 +47,12 @@
     <section class="flow">
       <h2>What this proves</h2>
       <ol>
-        <li><strong>Medallion:</strong> mint a durable ARK birth-certificate token with lineage and desire-policy commitments.</li>
+        <li><strong>Birth certificate:</strong> mint a wallet-compatible ERC-721 token with lineage, desire-policy, and metadata commitments.</li>
+        <li><strong>Marketplace compatibility:</strong> runtime requests are authorized by the current birth-certificate owner via <code>ownerOfAgent</code>.</li>
         <li><strong>Controlled host:</strong> register a Bastion/host commitment tied to an <code>allowed_host_set</code>.</li>
-        <li><strong>Boot lease:</strong> request an ARK OCI image and restrict it to that host set.</li>
-        <li><strong>Runtime claim:</strong> a host claims the lease with Agent-CVM attestation and transport-key commitments.</li>
-        <li><strong>StateVault:</strong> record only a redacted release receipt, then commit a monotonic state root.</li>
+        <li><strong>Runtime request:</strong> request an ARK OCI image and restrict it to that host set.</li>
+        <li><strong>Runtime claim:</strong> a host claims the request with Agent-CVM attestation and transport-key commitments.</li>
+        <li><strong>StateVault checkpoint:</strong> record a redacted release receipt and monotonic state root in one checkpoint operation.</li>
       </ol>
     </section>
   </main>

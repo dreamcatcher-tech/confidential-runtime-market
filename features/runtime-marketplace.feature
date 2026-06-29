@@ -4,8 +4,9 @@ Feature: Two-sided confidential runtime marketplace
 
   Background:
     Given publishers publish OCI image digests and runtime policy digests into ImageStreams
+    And ARKBirthCertificate mints ERC-721 agent identity commitments and exposes ownerOfAgent(agent_id)
     And hosts can subscribe to ImageStreams or respond to BootLeaseRequests
-    And users can claim an existing HostOffer or post prepaid demand
+    And users can post prepaid demand only for agents whose birth certificate they own
 
   Scenario: Publisher updates image stream without forcing immediate cutover
     Given a publisher signs a new OCI image digest and RuntimePolicy digest

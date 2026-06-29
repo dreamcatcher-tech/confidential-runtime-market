@@ -1,9 +1,11 @@
 const $ = (id) => document.getElementById(id);
 let config;
-let abi;
+let birthAbi;
+let marketplaceAbi;
 let provider;
 let signer;
-let contract;
+let birthContract;
+let marketplaceContract;
 
 const explorerByChain = {
   1: "https://etherscan.io/address/",
@@ -22,18 +24,22 @@ function short(value) {
 }
 
 async function loadConfig() {
-  [config, abi] = await Promise.all([
+  [config, birthAbi, marketplaceAbi] = await Promise.all([
     fetch("./config.json", { cache: "no-store" }).then(r => r.json()),
-    fetch("./ARKRuntimeOrchestrator.abi.json", { cache: "no-store" }).then(r => r.json())
+    fetch("./ARKBirthCertificate.abi.json", { cache: "no-store" }).then(r => r.json()),
+    fetch("./ARKRuntimeMarketplace.abi.json", { cache: "no-store" }).then(r => r.json())
   ]);
-  $("contractAddress").value = config.contract || "";
+  $("birthAddress").value = config.contracts?.birthCertificate || "";
+  $("marketplaceAddress").value = config.contracts?.marketplace || "";
   $("agentId").value = config.sample?.agentId || "";
   $("claimId").value = config.sample?.claimId || "";
   factList($("contractFacts"), {
     network: config.network,
     chainId: config.chainId,
-    contract: config.contract,
-    deployTx: short(config.deployTx),
+    birthCertificate: config.contracts?.birthCertificate,
+    marketplace: config.contracts?.marketplace,
+    birthDeployTx: short(config.deployTxs?.birthCertificate),
+    marketplaceDeployTx: short(config.deployTxs?.marketplace),
     generatedAt: config.generatedAt
   });
   factList($("sampleFacts"), {
@@ -46,10 +52,14 @@ async function loadConfig() {
     stateId: config.sample?.stateId
   });
   const base = explorerByChain[Number(config.chainId)] || "#";
-  const explorer = $("explorerLink");
-  if (base !== "#" && config.contract) explorer.href = `${base}${config.contract}`;
-  else explorer.removeAttribute("href");
-  $("status").textContent = config.contract ? "Config loaded. Connect a wallet to read through your browser RPC." : "Config loaded, but no deployed contract address is set yet.";
+  setExplorer($("birthExplorerLink"), base, config.contracts?.birthCertificate);
+  setExplorer($("marketplaceExplorerLink"), base, config.contracts?.marketplace);
+  $("status").textContent = config.contracts?.marketplace ? "Config loaded. Connect a wallet to read through your browser RPC." : "Config loaded, but deployed contract addresses are not set yet.";
+}
+
+function setExplorer(el, base, address) {
+  if (base !== "#" && address) el.href = `${base}${address}`;
+  else el.removeAttribute("href");
 }
 
 async function connect() {
@@ -58,7 +68,8 @@ async function connect() {
   await provider.send("eth_requestAccounts", []);
   signer = await provider.getSigner();
   const net = await provider.getNetwork();
-  contract = new ethers.Contract($("contractAddress").value, abi, signer);
+  birthContract = new ethers.Contract($("birthAddress").value, birthAbi, signer);
+  marketplaceContract = new ethers.Contract($("marketplaceAddress").value, marketplaceAbi, signer);
   $("status").textContent = `Connected ${await signer.getAddress()} on chain ${net.chainId}`;
 }
 
@@ -66,12 +77,20 @@ function serialize(value) {
   return JSON.stringify(value, (_, v) => typeof v === "bigint" ? v.toString() : v, 2);
 }
 
-async function ensureContract() {
-  if (!contract) await connect();
-  const address = $("contractAddress").value.trim();
-  if (!ethers.isAddress(address)) throw new Error("Invalid contract address");
-  contract = new ethers.Contract(address, abi, signer || provider);
-  return contract;
+async function ensureBirthContract() {
+  if (!birthContract) await connect();
+  const address = $("birthAddress").value.trim();
+  if (!ethers.isAddress(address)) throw new Error("Invalid birth certificate address");
+  birthContract = new ethers.Contract(address, birthAbi, signer || provider);
+  return birthContract;
+}
+
+async function ensureMarketplaceContract() {
+  if (!marketplaceContract) await connect();
+  const address = $("marketplaceAddress").value.trim();
+  if (!ethers.isAddress(address)) throw new Error("Invalid marketplace address");
+  marketplaceContract = new ethers.Contract(address, marketplaceAbi, signer || provider);
+  return marketplaceContract;
 }
 
 $("connectWallet").addEventListener("click", async () => {
@@ -80,15 +99,16 @@ $("connectWallet").addEventListener("click", async () => {
 
 $("readBirth").addEventListener("click", async () => {
   try {
-    const c = await ensureContract();
+    const c = await ensureBirthContract();
     const value = await c.birthByAgent($("agentId").value.trim());
-    $("readOutput").textContent = serialize({ tokenId: value.tokenId, agentId: value.agentId, parentAgentId: value.parentAgentId, lineageRoot: value.lineageRoot, desirePolicyHash: value.desirePolicyHash, currentRuntimeClaimId: value.currentRuntimeClaimId, exists: value.exists });
+    const owner = value.exists ? await c.ownerOfAgent($("agentId").value.trim()) : null;
+    $("readOutput").textContent = serialize({ tokenId: value.exists ? await c.tokenByAgent($("agentId").value.trim()) : 0, owner, agentId: value.agentId, parentAgentId: value.parentAgentId, lineageRoot: value.lineageRoot, desirePolicyHash: value.desirePolicyHash, birthMetadataHash: value.birthMetadataHash, mintedAt: value.mintedAt, exists: value.exists });
   } catch (err) { $("readOutput").textContent = err.message; }
 });
 
 $("readClaim").addEventListener("click", async () => {
   try {
-    const c = await ensureContract();
+    const c = await ensureMarketplaceContract();
     const value = await c.runtimeClaims($("claimId").value.trim());
     $("readOutput").textContent = serialize({ requestId: value.requestId, agentId: value.agentId, hostId: value.hostId, imageId: value.imageId, stateId: value.stateId, agentCvmAttestationHash: value.agentCvmAttestationHash, vmTransportPubkeyHash: value.vmTransportPubkeyHash, stateCommitmentId: value.stateCommitmentId, pricePerSecond: value.pricePerSecond, openedAt: value.openedAt, status: value.status });
   } catch (err) { $("readOutput").textContent = err.message; }

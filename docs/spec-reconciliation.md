@@ -13,9 +13,9 @@ The specs intentionally separate six concerns:
 
 ## Cross-file consistency checks
 
-- `protocol-domain-ledger.feature` defines provider-neutral primitives, including UserAuthority, UnlockPolicy, RecoveryEnrollment, WrappedDEKRecord, StateVaultRecord, StateVaultAccessLease, DataExportReceipt, VaultCustodyReceipt, AgentEpoch, MutationRecord, HostEpoch, RuntimeClaimClosureReceipt, and ServiceReceipt so authority, storage custody, closure, and metering events are not hidden as mutable status fields.
-- `ethereum-settlement-adapter.feature` implements those primitives as contract modules but does not redefine them.
-- `runtime-marketplace.feature` uses `HostOffer` and `BootLeaseRequest` as two paths to `RuntimeClaim`, then uses `RuntimeClaimClosureReceipt`, `PaymentReceipt`, and optional `ServiceReceipt` objects for closeout and bundles.
+- `protocol-domain-ledger.feature` defines provider-neutral primitives, including BirthCertificate, UserAuthority, UnlockPolicy, RecoveryEnrollment, WrappedDEKRecord, StateVaultRecord, StateVaultAccessLease, DataExportReceipt, VaultCustodyReceipt, AgentEpoch, MutationRecord, HostEpoch, RuntimeClaimClosureReceipt, and ServiceReceipt so authority, storage custody, closure, and metering events are not hidden as mutable status fields.
+- `ethereum-settlement-adapter.feature` implements the MVP as a split `ARKBirthCertificate` ERC-721 contract plus an `ARKRuntimeMarketplace` adapter, while preserving Reality Ledger roots for primitives that do not yet need dedicated methods.
+- `runtime-marketplace.feature` uses `ownerOfAgent(agent_id)` birth-certificate ownership to authorize runtime requests, uses `BootLeaseRequest` as the MVP path to `RuntimeClaim`, and keeps `HostOffer` as a compatible ledger primitive for later direct-claim flows.
 - `user-authority-and-recovery.feature` makes recovery a user-visible tier: local-only, multi-device, passkey-assisted, wallet-gated, hardware-key, or threshold recovery.
 - `phone-kms-unlock.feature` ensures both demand and supply paths pass through the same secret-release rule and treats wallet signatures as scoped intent, not DEK derivation.
 - `state-vault-mesh.feature` keeps root DEK custody with storage/vault services by default and gives Agent CVMs scoped access leases.
@@ -36,11 +36,12 @@ UserAuthority + UnlockPolicy
 ```
 
 ```text
-HostOffer or BootLeaseRequest
-  -> RuntimeClaim
+ARKBirthCertificate (ERC-721)
+  -> ownerOfAgent(agent_id)
+  -> ARKRuntimeMarketplace requestRuntime / claimRuntime
   -> Agent CVM attestation + BastionReport
   -> phone/StateVault/KMS scoped unlock or access lease
-  -> AgentEpoch + StateCommitment
+  -> AgentEpoch + StateCommitment via checkpointState
   -> KMSReleaseReceipt + RuntimeClaimClosureReceipt
   -> PaymentReceipt + optional ServiceReceipt
   -> SettlementAnchor

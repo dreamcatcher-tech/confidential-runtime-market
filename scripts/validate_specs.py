@@ -27,7 +27,7 @@ REQUIRED_FEATURES = {
     "reconciliation-invariants.feature",
 }
 REQUIRED_PRIMITIVES = [
-    "AgentIdentity", "UserAuthority", "UnlockPolicy", "RecoveryEnrollment", "WrappedDEKRecord",
+    "BirthCertificate", "AgentIdentity", "UserAuthority", "UnlockPolicy", "RecoveryEnrollment", "WrappedDEKRecord",
     "StateVaultRecord", "StateVaultAccessLease", "DataExportReceipt", "VaultCustodyReceipt",
     "AgentEpoch", "MutationRecord", "ImageStream", "RuntimePolicy", "HostRecord",
     "BastionReport", "HostEpoch", "HostOffer", "BootLeaseRequest", "RuntimeClaim",
@@ -35,11 +35,40 @@ REQUIRED_PRIMITIVES = [
     "PaymentReceipt", "ServiceOffer", "ServiceReceipt", "AgentRuntimeBundle", "SettlementAnchor",
     "DisputePatch",
 ]
+REQUIRED_CONTRACT_FUNCTIONS = {
+    "ARKBirthCertificate.sol": ["mint", "ownerOfAgent"],
+    "ARKRuntimeMarketplace.sol": ["registerHost", "publishImage", "requestRuntime", "claimRuntime", "checkpointState", "closeRuntime"],
+}
+RETIRED_TERMS = [
+    "ARKRuntimeOrchestrator",
+    "mintArkBirthCertificate",
+    "postBootLeaseRequest",
+    "claimBootLease",
+    "recordReleaseReceipt",
+    "commitState(",
+    "closeRuntimeClaim",
+]
+ACTIVE_TEXT_PATHS = [
+    ROOT / "README.md",
+    ROOT / "docs" / "v0-vertical-slice.md",
+    ROOT / "docs" / "spec-reconciliation.md",
+    ROOT / "site" / "index.html",
+    ROOT / "site" / "app.js",
+    ROOT / "scripts" / "deploy.cjs",
+]
 
 
 def fail(msg: str) -> None:
     print(f"FAIL: {msg}")
     sys.exit(1)
+
+
+def function_names(solidity_text: str) -> set[str]:
+    return set(re.findall(r"\bfunction\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", solidity_text))
+
+
+def mermaid_blocks(markdown: str) -> list[str]:
+    return re.findall(r"```mermaid\s*\n(.*?)```", markdown, re.S)
 
 
 def main() -> None:
@@ -81,12 +110,48 @@ def main() -> None:
         fail("missing primitives: " + ", ".join(missing_primitives))
 
     reconciliation = (ROOT / "docs" / "spec-reconciliation.md").read_text(encoding="utf-8")
-    required_terms = ["Reality Ledger", "Ethereum", "Foundry", "Bastion", "Agent CVM", "BootLeaseRequest", "HostOffer", "RuntimeClaim", "StateCommitment", "UserAuthority", "StateVault"]
+    required_terms = ["Reality Ledger", "Ethereum", "Foundry", "Bastion", "Agent CVM", "BootLeaseRequest", "HostOffer", "RuntimeClaim", "StateCommitment", "UserAuthority", "StateVault", "ARKBirthCertificate", "ARKRuntimeMarketplace"]
     for term in required_terms:
         if term not in reconciliation:
             fail(f"spec reconciliation missing term: {term}")
 
-    print(f"PASS: {len(feature_files)} feature files, {total_scenarios} scenarios, {len(REQUIRED_PRIMITIVES)} primitives")
+    contracts_dir = ROOT / "contracts"
+    if (contracts_dir / "ARKRuntimeOrchestrator.sol").exists():
+        fail("retired monolithic ARKRuntimeOrchestrator.sol still exists")
+    for contract_name, expected_functions in REQUIRED_CONTRACT_FUNCTIONS.items():
+        path = contracts_dir / contract_name
+        if not path.exists():
+            fail(f"missing contract: contracts/{contract_name}")
+        functions = function_names(path.read_text(encoding="utf-8"))
+        missing_functions = [name for name in expected_functions if name not in functions]
+        if missing_functions:
+            fail(f"contracts/{contract_name} missing functions: {', '.join(missing_functions)}")
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    blocks = mermaid_blocks(readme)
+    if not any("flowchart" in block for block in blocks):
+        fail("README must include a Mermaid flowchart architecture diagram")
+    if not any("sequenceDiagram" in block for block in blocks):
+        fail("README must include a Mermaid sequence diagram")
+    diagram_text = "\n".join(blocks)
+    diagram_terms = [
+        "ARKBirthCertificate", "ARKRuntimeMarketplace", "Reality Ledger", "Bastion", "Agent CVM", "StateVault",
+        "mint", "ownerOfAgent", "registerHost", "publishImage", "requestRuntime", "claimRuntime", "checkpointState", "closeRuntime",
+    ]
+    missing_diagram_terms = [term for term in diagram_terms if term not in diagram_text]
+    if missing_diagram_terms:
+        fail("README Mermaid diagrams missing terms: " + ", ".join(missing_diagram_terms))
+
+    reconciliation_feature = (FEATURE_DIR / "reconciliation-invariants.feature").read_text(encoding="utf-8")
+    if "README Mermaid diagrams stay aligned with executable contracts" not in reconciliation_feature:
+        fail("reconciliation feature must require README diagram/code alignment")
+
+    active_text = "\n".join(p.read_text(encoding="utf-8") for p in ACTIVE_TEXT_PATHS if p.exists())
+    retired_found = [term for term in RETIRED_TERMS if term in active_text]
+    if retired_found:
+        fail("active docs/code mention retired monolith terms: " + ", ".join(retired_found))
+
+    print(f"PASS: {len(feature_files)} feature files, {total_scenarios} scenarios, {len(REQUIRED_PRIMITIVES)} primitives, {len(REQUIRED_CONTRACT_FUNCTIONS)} contracts, {len(blocks)} README Mermaid diagrams")
 
 
 if __name__ == "__main__":

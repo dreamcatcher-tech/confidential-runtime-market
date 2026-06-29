@@ -2,7 +2,7 @@
   "name": "confidential-runtime-market",
   "version": "0.1.0",
   "private": true,
-  "description": "Provider-neutral Reality Ledger and Ethereum/L2 v0 vertical slice for ARK confidential runtime orchestration.",
+  "description": "Provider-neutral Reality Ledger, ERC-721 birth certificates, and Ethereum/L2 v0 runtime marketplace vertical slice for ARK confidential runtime orchestration.",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@openzeppelin/contracts": "5.0.2",
     "chai": "^4.5.0",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",

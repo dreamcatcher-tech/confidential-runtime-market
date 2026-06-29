@@ -8,36 +8,31 @@ Feature: Ethereum and L2 settlement adapter
     And Ethereum stores public commitments, roots, receipts, indexes, and balances only
     And secret material is never stored in contract state, calldata, blobs, or event logs
 
-  Scenario: Ethereum contract modules map to provider-neutral primitives
-    Given an ImageRegistry contract records ImageStream and RuntimePolicy digests
-    And a HostRegistry records HostRecord and BastionReport commitments
-    And a HostOfferBook records HostOffer commitments
-    And a DemandLeaseBook records BootLeaseRequest commitments
-    And a RuntimeClaimRegistry records RuntimeClaim commitments
-    And an EpochManifestRegistry records AgentEpoch and SettlementAnchor roots
-    And a StateRootRegistry records StateCommitment roots and monotonicity rules
-    And a PaymentEscrow records prepaid balances, host payouts, refunds, stable-credit settlement, and PaymentReceipt commitments
-    And an AttestationArchive records AttestationRecord hashes and pointers
-    And a DisputeRegistry records DisputePatch commitments and objective-fault resolution state
+  Scenario: Split Ethereum contracts map to provider-neutral primitives
+    Given ARKBirthCertificate is an ERC-721-compatible contract for BirthCertificate commitments
+    And ARKRuntimeMarketplace records ImageStream, RuntimePolicy, HostRecord, BootLeaseRequest, RuntimeClaim, StateCommitment, KMSReleaseReceipt, and RuntimeClaimClosureReceipt commitments through a small runtime surface
+    And ARKRuntimeMarketplace checks birth-certificate ownership through ownerOfAgent(agent_id)
+    And PaymentReceipt, AttestationRecord, SettlementAnchor, ServiceReceipt, HostOffer, and DisputePatch details may be anchored as Reality Ledger roots before they need dedicated contract methods
     When a user or host interacts with the Ethereum adapter
     Then the adapter exposes IDs and receipts that map back to the provider-neutral primitives
+    And the birth-certificate contract can evolve independently from the runtime marketplace while preserving ownerOfAgent compatibility
 
-  Scenario: Demand-side prepaid boot lease can be auto-claimed
-    Given a user or business posts a BootLeaseRequest with agent_id, state_id, image digest, attestation policy, max price, prepaid budget, host predicate, duration, spot policy, and unlock policy commitment
+  Scenario: Demand-side prepaid runtime request can be claimed
+    Given a user or business posts a BootLeaseRequest with agent_id, state_id, image digest, attestation policy, max price, prepaid budget, host predicate, duration, and unlock policy commitment
     And a host Bastion CVM boots or assigns an Agent CVM satisfying that request
-    When the host submits claimLease with offer manifest, attestation hash, Agent CVM transport public key, and price terms
-    Then the DemandLeaseBook accepts the claim only if every public predicate matches
-    And PaymentEscrow locks the lease balance
-    And RuntimeClaimRegistry records a pending or active RuntimeClaim with state_commitment_id and source request reference
+    When the host submits claimRuntime with attestation hash, Agent CVM transport public key, and price terms
+    Then ARKRuntimeMarketplace accepts the claim only if every public predicate matches
+    And the request records the prepaid balance as public settlement evidence
+    And ARKRuntimeMarketplace records an active RuntimeClaim with source request reference
     And phone/KMS unlock is still required before secrets reach the Agent CVM
 
-  Scenario: Supply-side pre-warmed host offer can be claimed
+  Scenario: Supply-side pre-warmed host offer stays a compatible ledger primitive
     Given a host subscribes to an ImageStream
     And Bastion pre-warms an Agent CVM for the latest allowed image digest
-    And the host posts a HostOffer with Bastion evidence, Agent CVM attestation, transport key, price, and health summary root
-    When a user claims the HostOffer and bonds payment
-    Then RuntimeClaimRegistry records the active mapping only after claim acceptance
-    And the phone/KMS verifies the manifest before releasing scoped unlock material
+    And the host posts a HostOffer with Bastion evidence, Agent CVM attestation, transport key, price, and health summary root into the Reality Ledger
+    When the MVP Ethereum adapter is evaluated
+    Then direct HostOffer claiming may remain a ledger-root or later adapter extension rather than a mandatory runtime-marketplace method
+    And the phone/KMS still verifies the manifest before releasing scoped unlock material
 
   Scenario: Spot pricing causes graceful eviction rather than state loss
     Given a RuntimeClaim has spot terms with user max bid, host minimum ask, prepaid balance, grace period, and final state-root requirement

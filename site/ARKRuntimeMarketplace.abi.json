@@ -1,89 +1,14 @@
 [
   {
-    "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "agentId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "parentAgentId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "lineageRoot",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "desirePolicyHash",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "uri",
-        "type": "string"
+        "internalType": "address",
+        "name": "birthCertificate_",
+        "type": "address"
       }
     ],
-    "name": "ArkBirthCertificateMinted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "agentId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "imageId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "stateId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "allowedHostSetHash",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowWei",
-        "type": "uint256"
-      }
-    ],
-    "name": "BootLeaseRequested",
-    "type": "event"
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
     "anonymous": false,
@@ -110,6 +35,12 @@
         "indexed": false,
         "internalType": "bytes32",
         "name": "bastionAttestationHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "hostMetadataHash",
         "type": "bytes32"
       }
     ],
@@ -145,80 +76,6 @@
       }
     ],
     "name": "ImagePublished",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "claimId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "stateCommitmentId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "releaseReceiptHash",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint64",
-        "name": "expiry",
-        "type": "uint64"
-      }
-    ],
-    "name": "ReleaseReceiptRecorded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "claimId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "agentId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "finalStateCommitmentId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "successorClaimId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "closureReceiptHash",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "reason",
-        "type": "uint8"
-      }
-    ],
-    "name": "RuntimeClaimClosed",
     "type": "event"
   },
   {
@@ -270,6 +127,86 @@
       {
         "indexed": true,
         "internalType": "bytes32",
+        "name": "claimId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "agentId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "finalStateCommitmentId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "closureReceiptHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "reason",
+        "type": "uint8"
+      }
+    ],
+    "name": "RuntimeClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "agentId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "imageId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "stateId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "allowedHostSetHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "escrowWei",
+        "type": "uint256"
+      }
+    ],
+    "name": "RuntimeRequested",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
         "name": "stateCommitmentId",
         "type": "bytes32"
       },
@@ -302,34 +239,15 @@
         "internalType": "bytes32",
         "name": "previousRootHash",
         "type": "bytes32"
-      }
-    ],
-    "name": "StateCommitted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "releaseReceiptHash",
+        "type": "bytes32"
       }
     ],
-    "name": "Transfer",
+    "name": "StateCheckpointed",
     "type": "event"
   },
   {
@@ -365,251 +283,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "agentByToken",
+    "inputs": [],
+    "name": "birthCertificate",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "contract IARKBirthCertificate",
         "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
         "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "birthByAgent",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "agentId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "parentAgentId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "lineageRoot",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "desirePolicyHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "currentRuntimeClaimId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "exists",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "bootLeaseRequests",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "requester",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "agentId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "imageId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "stateId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "allowedHostSetHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "desiredSeconds",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maxPricePerSecond",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "escrowWei",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "unlockPolicyHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "claimed",
-        "type": "bool"
-      },
-      {
-        "internalType": "bool",
-        "name": "cancelled",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "claimId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "hostId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "agentCvmAttestationHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "vmTransportPubkeyHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "stateCommitmentId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "pricePerSecond",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimBootLease",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "claimId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint8",
-        "name": "reason",
-        "type": "uint8"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "finalStateCommitmentId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "successorClaimId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "closureReceiptHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "closeRuntimeClaim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "closureReceiptByClaim",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -646,11 +326,106 @@
         "internalType": "bytes32",
         "name": "writerAttestationHash",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "releaseReceiptHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "releaseExpiry",
+        "type": "uint64"
       }
     ],
-    "name": "commitState",
+    "name": "checkpointState",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "claimId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "hostId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "agentCvmAttestationHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "vmTransportPubkeyHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pricePerSecond",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimRuntime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "claimId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint8",
+        "name": "reason",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "finalStateCommitmentId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "closureReceiptHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "closeRuntime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "closureReceiptByClaim",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -680,13 +455,8 @@
       },
       {
         "internalType": "bytes32",
-        "name": "hardwareProfileHash",
+        "name": "hostMetadataHash",
         "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "endpointRef",
-        "type": "string"
       },
       {
         "internalType": "bool",
@@ -721,11 +491,6 @@
         "internalType": "bytes32",
         "name": "runtimePolicyDigest",
         "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "metadataURI",
-        "type": "string"
       },
       {
         "internalType": "bool",
@@ -778,71 +543,51 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "agentId",
+        "name": "imageId",
         "type": "bytes32"
       },
       {
         "internalType": "bytes32",
-        "name": "parentAgentId",
+        "name": "ociDigest",
         "type": "bytes32"
       },
       {
         "internalType": "bytes32",
-        "name": "lineageRoot",
+        "name": "runtimePolicyDigest",
         "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "desirePolicyHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "uri",
-        "type": "string"
       }
     ],
-    "name": "mintArkBirthCertificate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
+    "name": "publishImage",
+    "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "nextTokenId",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "ownerOf",
-    "outputs": [
+        "internalType": "bytes32",
+        "name": "hostId",
+        "type": "bytes32"
+      },
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "allowedHostSetHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "bastionAttestationHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "hostMetadataHash",
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
+    "name": "registerHost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -888,117 +633,9 @@
         "type": "bytes32"
       }
     ],
-    "name": "postBootLeaseRequest",
+    "name": "requestRuntime",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "imageId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "ociDigest",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "runtimePolicyDigest",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "metadataURI",
-        "type": "string"
-      }
-    ],
-    "name": "publishImage",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "claimId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "stateCommitmentId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "releaseReceiptHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "expiry",
-        "type": "uint64"
-      }
-    ],
-    "name": "recordReleaseReceipt",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "hostId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "allowedHostSetHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "bastionAttestationHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "hardwareProfileHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "endpointRef",
-        "type": "string"
-      }
-    ],
-    "name": "registerHost",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "releaseReceiptByClaim",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1062,9 +699,73 @@
         "type": "uint64"
       },
       {
-        "internalType": "enum ARKRuntimeOrchestrator.ClaimStatus",
+        "internalType": "enum ARKRuntimeMarketplace.ClaimStatus",
         "name": "status",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "runtimeRequests",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "agentId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "imageId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "stateId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "allowedHostSetHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "desiredSeconds",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxPricePerSecond",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "escrowWei",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "unlockPolicyHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "claimed",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1111,28 +812,19 @@
         "type": "bytes32"
       },
       {
+        "internalType": "bytes32",
+        "name": "releaseReceiptHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "releaseExpiry",
+        "type": "uint64"
+      },
+      {
         "internalType": "uint64",
         "name": "committedAt",
         "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenURI",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
       }
     ],
     "stateMutability": "view",

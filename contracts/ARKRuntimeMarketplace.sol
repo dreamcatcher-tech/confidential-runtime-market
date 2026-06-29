@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title ARKRuntimeOrchestrator
-/// @notice v0 Ethereum/L2 settlement adapter for a provider-neutral Reality Ledger.
-/// @dev Stores public commitments, receipts, ids, roots, and runtime authority only. Never put secrets here.
-contract ARKRuntimeOrchestrator {
+interface IARKBirthCertificate {
+    function ownerOfAgent(bytes32 agentId) external view returns (address);
+}
+
+/// @title ARKRuntimeMarketplace
+/// @notice v0 Ethereum/L2 settlement adapter for runtime supply, demand, claims, and state checkpoints.
+/// @dev Stores public commitments, receipts, ids, and roots only. Never put secrets here.
+contract ARKRuntimeMarketplace {
     bytes32 public constant ANY_HOST_SET = bytes32(0);
 
     enum ClaimStatus {
@@ -17,8 +21,7 @@ contract ARKRuntimeOrchestrator {
         address operator;
         bytes32 allowedHostSetHash;
         bytes32 bastionAttestationHash;
-        bytes32 hardwareProfileHash;
-        string endpointRef;
+        bytes32 hostMetadataHash;
         bool active;
     }
 
@@ -26,21 +29,10 @@ contract ARKRuntimeOrchestrator {
         address publisher;
         bytes32 ociDigest;
         bytes32 runtimePolicyDigest;
-        string metadataURI;
         bool active;
     }
 
-    struct BirthCertificate {
-        uint256 tokenId;
-        bytes32 agentId;
-        bytes32 parentAgentId;
-        bytes32 lineageRoot;
-        bytes32 desirePolicyHash;
-        bytes32 currentRuntimeClaimId;
-        bool exists;
-    }
-
-    struct BootLeaseRequest {
+    struct RuntimeRequest {
         address requester;
         bytes32 agentId;
         bytes32 imageId;
@@ -51,7 +43,6 @@ contract ARKRuntimeOrchestrator {
         uint256 escrowWei;
         bytes32 unlockPolicyHash;
         bool claimed;
-        bool cancelled;
     }
 
     struct RuntimeClaim {
@@ -75,67 +66,45 @@ contract ARKRuntimeOrchestrator {
         bytes32 rootHash;
         bytes32 previousRootHash;
         bytes32 writerAttestationHash;
+        bytes32 releaseReceiptHash;
+        uint64 releaseExpiry;
         uint64 committedAt;
     }
 
-    uint256 public nextTokenId = 1;
+    IARKBirthCertificate public immutable birthCertificate;
 
     mapping(bytes32 => HostRecord) public hosts;
     mapping(bytes32 => ImageRecord) public images;
-    mapping(bytes32 => BirthCertificate) public birthByAgent;
-    mapping(uint256 => bytes32) public agentByToken;
-    mapping(bytes32 => BootLeaseRequest) public bootLeaseRequests;
+    mapping(bytes32 => RuntimeRequest) public runtimeRequests;
     mapping(bytes32 => RuntimeClaim) public runtimeClaims;
     mapping(bytes32 => bytes32) public activeClaimByAgent;
     mapping(bytes32 => StateCommitment) public stateCommitments;
     mapping(bytes32 => bytes32) public latestStateCommitmentByState;
     mapping(bytes32 => uint64) public latestStateVersionByState;
-    mapping(bytes32 => bytes32) public releaseReceiptByClaim;
     mapping(bytes32 => bytes32) public closureReceiptByClaim;
 
-    mapping(uint256 => address) private _owners;
-    mapping(address => uint256) private _balances;
-    mapping(uint256 => string) private _tokenURIs;
-
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-    event HostRegistered(bytes32 indexed hostId, address indexed operator, bytes32 allowedHostSetHash, bytes32 bastionAttestationHash);
+    event HostRegistered(bytes32 indexed hostId, address indexed operator, bytes32 allowedHostSetHash, bytes32 bastionAttestationHash, bytes32 hostMetadataHash);
     event ImagePublished(bytes32 indexed imageId, address indexed publisher, bytes32 ociDigest, bytes32 runtimePolicyDigest);
-    event ArkBirthCertificateMinted(uint256 indexed tokenId, bytes32 indexed agentId, bytes32 indexed parentAgentId, bytes32 lineageRoot, bytes32 desirePolicyHash, string uri);
-    event BootLeaseRequested(bytes32 indexed requestId, bytes32 indexed agentId, bytes32 indexed imageId, bytes32 stateId, bytes32 allowedHostSetHash, uint256 escrowWei);
+    event RuntimeRequested(bytes32 indexed requestId, bytes32 indexed agentId, bytes32 indexed imageId, bytes32 stateId, bytes32 allowedHostSetHash, uint256 escrowWei);
     event RuntimeClaimed(bytes32 indexed claimId, bytes32 indexed requestId, bytes32 indexed hostId, bytes32 agentId, bytes32 agentCvmAttestationHash, bytes32 vmTransportPubkeyHash);
-    event ReleaseReceiptRecorded(bytes32 indexed claimId, bytes32 indexed stateCommitmentId, bytes32 releaseReceiptHash, uint64 expiry);
-    event StateCommitted(bytes32 indexed stateCommitmentId, bytes32 indexed claimId, bytes32 indexed stateId, uint64 version, bytes32 rootHash, bytes32 previousRootHash);
-    event RuntimeClaimClosed(bytes32 indexed claimId, bytes32 indexed agentId, bytes32 finalStateCommitmentId, bytes32 successorClaimId, bytes32 closureReceiptHash, uint8 reason);
+    event StateCheckpointed(bytes32 indexed stateCommitmentId, bytes32 indexed claimId, bytes32 indexed stateId, uint64 version, bytes32 rootHash, bytes32 previousRootHash, bytes32 releaseReceiptHash);
+    event RuntimeClosed(bytes32 indexed claimId, bytes32 indexed agentId, bytes32 finalStateCommitmentId, bytes32 closureReceiptHash, uint8 reason);
 
-    modifier onlyTokenOwner(bytes32 agentId) {
-        BirthCertificate storage cert = birthByAgent[agentId];
-        require(cert.exists, "agent certificate missing");
-        require(_owners[cert.tokenId] == msg.sender, "not agent owner");
+    constructor(address birthCertificate_) {
+        require(birthCertificate_ != address(0), "birth certificate required");
+        birthCertificate = IARKBirthCertificate(birthCertificate_);
+    }
+
+    modifier onlyAgentOwner(bytes32 agentId) {
+        require(birthCertificate.ownerOfAgent(agentId) == msg.sender, "not agent owner");
         _;
-    }
-
-    function balanceOf(address owner) external view returns (uint256) {
-        require(owner != address(0), "zero owner");
-        return _balances[owner];
-    }
-
-    function ownerOf(uint256 tokenId) public view returns (address) {
-        address owner = _owners[tokenId];
-        require(owner != address(0), "unknown token");
-        return owner;
-    }
-
-    function tokenURI(uint256 tokenId) external view returns (string memory) {
-        require(_owners[tokenId] != address(0), "unknown token");
-        return _tokenURIs[tokenId];
     }
 
     function registerHost(
         bytes32 hostId,
         bytes32 allowedHostSetHash,
         bytes32 bastionAttestationHash,
-        bytes32 hardwareProfileHash,
-        string calldata endpointRef
+        bytes32 hostMetadataHash
     ) external {
         require(hostId != bytes32(0), "host id required");
         require(bastionAttestationHash != bytes32(0), "bastion attestation required");
@@ -143,18 +112,16 @@ contract ARKRuntimeOrchestrator {
             operator: msg.sender,
             allowedHostSetHash: allowedHostSetHash,
             bastionAttestationHash: bastionAttestationHash,
-            hardwareProfileHash: hardwareProfileHash,
-            endpointRef: endpointRef,
+            hostMetadataHash: hostMetadataHash,
             active: true
         });
-        emit HostRegistered(hostId, msg.sender, allowedHostSetHash, bastionAttestationHash);
+        emit HostRegistered(hostId, msg.sender, allowedHostSetHash, bastionAttestationHash, hostMetadataHash);
     }
 
     function publishImage(
         bytes32 imageId,
         bytes32 ociDigest,
-        bytes32 runtimePolicyDigest,
-        string calldata metadataURI
+        bytes32 runtimePolicyDigest
     ) external {
         require(imageId != bytes32(0), "image id required");
         require(ociDigest != bytes32(0), "oci digest required");
@@ -163,44 +130,12 @@ contract ARKRuntimeOrchestrator {
             publisher: msg.sender,
             ociDigest: ociDigest,
             runtimePolicyDigest: runtimePolicyDigest,
-            metadataURI: metadataURI,
             active: true
         });
         emit ImagePublished(imageId, msg.sender, ociDigest, runtimePolicyDigest);
     }
 
-    function mintArkBirthCertificate(
-        bytes32 agentId,
-        bytes32 parentAgentId,
-        bytes32 lineageRoot,
-        bytes32 desirePolicyHash,
-        string calldata uri
-    ) external returns (uint256 tokenId) {
-        require(agentId != bytes32(0), "agent id required");
-        require(!birthByAgent[agentId].exists, "agent already minted");
-        require(lineageRoot != bytes32(0), "lineage root required");
-        require(desirePolicyHash != bytes32(0), "desire policy required");
-
-        tokenId = nextTokenId++;
-        _owners[tokenId] = msg.sender;
-        _balances[msg.sender] += 1;
-        _tokenURIs[tokenId] = uri;
-        agentByToken[tokenId] = agentId;
-        birthByAgent[agentId] = BirthCertificate({
-            tokenId: tokenId,
-            agentId: agentId,
-            parentAgentId: parentAgentId,
-            lineageRoot: lineageRoot,
-            desirePolicyHash: desirePolicyHash,
-            currentRuntimeClaimId: bytes32(0),
-            exists: true
-        });
-
-        emit Transfer(address(0), msg.sender, tokenId);
-        emit ArkBirthCertificateMinted(tokenId, agentId, parentAgentId, lineageRoot, desirePolicyHash, uri);
-    }
-
-    function postBootLeaseRequest(
+    function requestRuntime(
         bytes32 requestId,
         bytes32 agentId,
         bytes32 imageId,
@@ -209,16 +144,16 @@ contract ARKRuntimeOrchestrator {
         uint64 desiredSeconds,
         uint256 maxPricePerSecond,
         bytes32 unlockPolicyHash
-    ) external payable onlyTokenOwner(agentId) {
+    ) external payable onlyAgentOwner(agentId) {
         require(requestId != bytes32(0), "request id required");
-        require(bootLeaseRequests[requestId].requester == address(0), "request exists");
+        require(runtimeRequests[requestId].requester == address(0), "request exists");
         require(images[imageId].active, "image missing");
         require(stateId != bytes32(0), "state id required");
         require(desiredSeconds > 0, "duration required");
         require(unlockPolicyHash != bytes32(0), "unlock policy required");
         require(activeClaimByAgent[agentId] == bytes32(0), "agent already active");
 
-        bootLeaseRequests[requestId] = BootLeaseRequest({
+        runtimeRequests[requestId] = RuntimeRequest({
             requester: msg.sender,
             agentId: agentId,
             imageId: imageId,
@@ -228,25 +163,23 @@ contract ARKRuntimeOrchestrator {
             maxPricePerSecond: maxPricePerSecond,
             escrowWei: msg.value,
             unlockPolicyHash: unlockPolicyHash,
-            claimed: false,
-            cancelled: false
+            claimed: false
         });
-        emit BootLeaseRequested(requestId, agentId, imageId, stateId, allowedHostSetHash, msg.value);
+        emit RuntimeRequested(requestId, agentId, imageId, stateId, allowedHostSetHash, msg.value);
     }
 
-    function claimBootLease(
+    function claimRuntime(
         bytes32 requestId,
         bytes32 claimId,
         bytes32 hostId,
         bytes32 agentCvmAttestationHash,
         bytes32 vmTransportPubkeyHash,
-        bytes32 stateCommitmentId,
         uint256 pricePerSecond
     ) external {
-        BootLeaseRequest storage request = bootLeaseRequests[requestId];
+        RuntimeRequest storage request = runtimeRequests[requestId];
         HostRecord storage host = hosts[hostId];
         require(request.requester != address(0), "request missing");
-        require(!request.claimed && !request.cancelled, "request closed");
+        require(!request.claimed, "request closed");
         require(claimId != bytes32(0), "claim id required");
         require(runtimeClaims[claimId].status == ClaimStatus.None, "claim exists");
         require(host.active, "host missing");
@@ -266,49 +199,36 @@ contract ARKRuntimeOrchestrator {
             stateId: request.stateId,
             agentCvmAttestationHash: agentCvmAttestationHash,
             vmTransportPubkeyHash: vmTransportPubkeyHash,
-            stateCommitmentId: stateCommitmentId,
+            stateCommitmentId: bytes32(0),
             pricePerSecond: pricePerSecond,
             openedAt: uint64(block.timestamp),
             status: ClaimStatus.Active
         });
         activeClaimByAgent[request.agentId] = claimId;
-        if (birthByAgent[request.agentId].exists) {
-            birthByAgent[request.agentId].currentRuntimeClaimId = claimId;
-        }
         emit RuntimeClaimed(claimId, requestId, hostId, request.agentId, agentCvmAttestationHash, vmTransportPubkeyHash);
     }
 
-    function recordReleaseReceipt(
-        bytes32 claimId,
-        bytes32 stateCommitmentId,
-        bytes32 releaseReceiptHash,
-        uint64 expiry
-    ) external {
-        RuntimeClaim storage claim = runtimeClaims[claimId];
-        require(claim.status == ClaimStatus.Active, "claim not active");
-        HostRecord storage host = hosts[claim.hostId];
-        require(msg.sender == host.operator || msg.sender == ownerOf(birthByAgent[claim.agentId].tokenId), "not authorized");
-        require(releaseReceiptHash != bytes32(0), "receipt required");
-        require(expiry > block.timestamp, "expiry stale");
-        releaseReceiptByClaim[claimId] = releaseReceiptHash;
-        emit ReleaseReceiptRecorded(claimId, stateCommitmentId, releaseReceiptHash, expiry);
-    }
-
-    function commitState(
+    function checkpointState(
         bytes32 claimId,
         bytes32 stateCommitmentId,
         uint64 version,
         bytes32 rootHash,
         bytes32 previousRootHash,
-        bytes32 writerAttestationHash
+        bytes32 writerAttestationHash,
+        bytes32 releaseReceiptHash,
+        uint64 releaseExpiry
     ) external {
         RuntimeClaim storage claim = runtimeClaims[claimId];
         require(claim.status == ClaimStatus.Active, "claim not active");
-        HostRecord storage host = hosts[claim.hostId];
-        require(msg.sender == host.operator || msg.sender == ownerOf(birthByAgent[claim.agentId].tokenId), "not authorized");
+        require(_isClaimAuthority(claim), "not authorized");
         require(stateCommitmentId != bytes32(0), "state commitment id required");
         require(rootHash != bytes32(0), "root required");
         require(writerAttestationHash == claim.agentCvmAttestationHash, "writer attestation mismatch");
+        if (releaseReceiptHash != bytes32(0)) {
+            require(releaseExpiry > block.timestamp, "expiry stale");
+        } else {
+            require(releaseExpiry == 0, "receipt required for expiry");
+        }
 
         uint64 latestVersion = latestStateVersionByState[claim.stateId];
         bytes32 latestCommitmentId = latestStateCommitmentByState[claim.stateId];
@@ -328,37 +248,40 @@ contract ARKRuntimeOrchestrator {
             rootHash: rootHash,
             previousRootHash: previousRootHash,
             writerAttestationHash: writerAttestationHash,
+            releaseReceiptHash: releaseReceiptHash,
+            releaseExpiry: releaseExpiry,
             committedAt: uint64(block.timestamp)
         });
         latestStateVersionByState[claim.stateId] = version;
         latestStateCommitmentByState[claim.stateId] = stateCommitmentId;
         claim.stateCommitmentId = stateCommitmentId;
 
-        emit StateCommitted(stateCommitmentId, claimId, claim.stateId, version, rootHash, previousRootHash);
+        emit StateCheckpointed(stateCommitmentId, claimId, claim.stateId, version, rootHash, previousRootHash, releaseReceiptHash);
     }
 
-    function closeRuntimeClaim(
+    function closeRuntime(
         bytes32 claimId,
         uint8 reason,
         bytes32 finalStateCommitmentId,
-        bytes32 successorClaimId,
         bytes32 closureReceiptHash
     ) external {
         RuntimeClaim storage claim = runtimeClaims[claimId];
         require(claim.status == ClaimStatus.Active, "claim not active");
-        HostRecord storage host = hosts[claim.hostId];
-        require(msg.sender == host.operator || msg.sender == ownerOf(birthByAgent[claim.agentId].tokenId), "not authorized");
+        require(_isClaimAuthority(claim), "not authorized");
         require(closureReceiptHash != bytes32(0), "closure receipt required");
         if (finalStateCommitmentId != bytes32(0)) {
             require(stateCommitments[finalStateCommitmentId].claimId == claimId, "final state not for claim");
         }
 
         claim.status = ClaimStatus.Closed;
-        activeClaimByAgent[claim.agentId] = successorClaimId;
-        if (birthByAgent[claim.agentId].exists) {
-            birthByAgent[claim.agentId].currentRuntimeClaimId = successorClaimId;
-        }
+        activeClaimByAgent[claim.agentId] = bytes32(0);
         closureReceiptByClaim[claimId] = closureReceiptHash;
-        emit RuntimeClaimClosed(claimId, claim.agentId, finalStateCommitmentId, successorClaimId, closureReceiptHash, reason);
+        emit RuntimeClosed(claimId, claim.agentId, finalStateCommitmentId, closureReceiptHash, reason);
+    }
+
+    function _isClaimAuthority(RuntimeClaim storage claim) private view returns (bool) {
+        HostRecord storage host = hosts[claim.hostId];
+        if (msg.sender == host.operator) return true;
+        return birthCertificate.ownerOfAgent(claim.agentId) == msg.sender;
     }
 }

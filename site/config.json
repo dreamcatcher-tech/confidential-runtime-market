@@ -1,13 +1,19 @@
 {
-  "network": "sepolia",
-  "chainId": 11155111,
-  "contract": "0xf32ac756ea8f12c6B7DdDb3525ff8EaA2349aB64",
-  "deployTx": "0x196e6b7f73e561edc95a0adfab024432f3c88fb33a074049c104f1ec5dca9eb0",
+  "network": "hardhat",
+  "chainId": 31337,
+  "contracts": {
+    "birthCertificate": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "marketplace": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+  },
+  "deployTxs": {
+    "birthCertificate": "0x11078eaea294a6597cc2a0b8d4de3630c4d0594fa3a616acd3d38385af4398bb",
+    "marketplace": "0xd1b218c88838eed8cf936192b260a767b3637ba421a8473813c0912cd70e9c30"
+  },
   "sample": {
     "hostId": "0x601c15b09921a97443bb6bcb101ff49e376b0c1bf5f82fa25f72a271787657d2",
     "allowedHostSetHash": "0x4c316533105231ec9782a7f089a7dbe01ee803eabf4553dbcabd4e3650e6e2d5",
     "bastionAttestationHash": "0x23de182137568c861ea0b224c68bdc158af17814a2ba349c22f6997ac7e67b5a",
-    "hardwareProfileHash": "0x04313d3c6c0df25ffaa6a7558bfa520cd61f93a994a035b38d9ccea35528b157",
+    "hostMetadataHash": "0x23ede8a0bbbb06840ae6e1dc3911fdccc22bba9d24dcca849def99b680dee2a1",
     "imageId": "0xbf558d9cd6964940b8f55457d3cf6768ff9e4ee38b73b588e583038c4e2d8210",
     "ociDigest": "0x3229cd9c4a7ac9ce7b4226d5c60ed97c5467f5c0f105ce88a2147aa34a165e5f",
     "runtimePolicyDigest": "0x8a769fa74a28c5f048b188e4314f123bf84f515463cea09ac5c2765f8334c1b8",
@@ -15,6 +21,7 @@
     "parentAgentId": "0x79e301c190489b74e90637604daf1c7d5c338a8d0d09435d25c80e7833f54978",
     "lineageRoot": "0x881c7c6ff51d929e43592c6e8fa8d3b336212367450c1c0a2afa30ebad613285",
     "desirePolicyHash": "0x0663e4052dd1b542fb97dbd84437a12cc5ae31a2c7dd857a600ccf0f827af1d0",
+    "birthMetadataHash": "0x69e221194d7cf0689f64125c5744e01bcd1e7576fa1e1908788717e62682092f",
     "stateId": "0x9e51c1e22a30c6da048a36bed7f6d4474449026ecf1b5816a4b66c1928b9cc52",
     "requestId": "0xfbcf69db0f28150022c1a13477ed260663ea7dc0c9c1519532eb6197beb9b07e",
     "claimId": "0xac60febd670a68a8fdcde203e7698a96fcb7104a4044daadf254c356eb35c73f",
@@ -26,14 +33,14 @@
     "stateRoot": "0x218791c4f092912d2b601ff7c5c918874465e065d02ed84ba1b59577e63d50bd"
   },
   "txs": {
-    "deploy": "0x196e6b7f73e561edc95a0adfab024432f3c88fb33a074049c104f1ec5dca9eb0",
-    "registerHost": "0xa783afb6b7845401da8d8b51427011177c47a6ef583acbbc27ae0ab43783a6a2",
-    "publishImage": "0xc0cac8973b0c9e001a75b37b305435bb70399b4a84a656b49de75bd30d750b0c",
-    "mintBirthCertificate": "0xaf899846a995e1ad1f87f1496d2fa00369a5391987d7921cb646036e48e78ca1",
-    "postBootLeaseRequest": "0x8b71e8b0ac35e5c96ea24d21898b447dd58909612d6c28d778c9dbf773429668",
-    "claimBootLease": "0x942b6d9d92d90b0139fd095656200773eb4534d5bd15f0f5cdf1cc8c9c5ec214",
-    "recordReleaseReceipt": "0x40b0c1b89b311e2fd1b9ebeadc3b5406e3af1adec7357623e59a36fe4eda9b75",
-    "commitState": "0xe42a9fef25a5d448dfc378c2b203e57e7373279ceba70c34b95a9dc14f8921e8"
+    "deployBirthCertificate": "0x11078eaea294a6597cc2a0b8d4de3630c4d0594fa3a616acd3d38385af4398bb",
+    "deployMarketplace": "0xd1b218c88838eed8cf936192b260a767b3637ba421a8473813c0912cd70e9c30",
+    "registerHost": "0xa13d5cf0a06260dd4dbc52912fe4694609ecf350677c5a990e044930ae38b962",
+    "publishImage": "0xf153673fdefa50d310773795fa3ce8ef930604de0c41eb868fe058b49c9dde86",
+    "mintBirthCertificate": "0x7a6f9cb2f73f491c4d0ed6b99f8c0610a2d5b881798887d88565a065215d6b47",
+    "requestRuntime": "0x18ae8d5bc144e17db236feca85edfe97e0d0589fab3c172ba018d1d1412d5c22",
+    "claimRuntime": "0x1a2e66ca8c634e9acd63b7e2f97addfd4a6568b828dfcdabe6e68bc8838e3734",
+    "checkpointState": "0x52f8f951f32475d1d99edc919a80391ee54905bb5762a112cd7e2cfc7ae0900d"
   },
-  "generatedAt": "2026-06-28T14:38:04.332Z"
+  "generatedAt": "2026-06-29T02:35:30.485Z"
 }

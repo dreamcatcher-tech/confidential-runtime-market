@@ -48,3 +48,10 @@ Feature: Cross-spec reconciliation invariants
     Then the Agent CVM receives scoped data access rather than a portable root DEK by default
     And user export still requires phone or recovery authority proof
     And the design remains compatible with an opt-in local-DEK portability tier
+
+  Scenario: README Mermaid diagrams stay aligned with executable contracts
+    Given README.md contains a high-level Mermaid flowchart and a Mermaid sequence diagram
+    And the executable Solidity contracts are ARKBirthCertificate and ARKRuntimeMarketplace
+    When scripts/validate_specs.py runs
+    Then the diagrams must name the same contracts and core operations that exist in the current codebase
+    And retired monolithic contract operations must not appear in active docs or code
