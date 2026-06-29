@@ -21,11 +21,12 @@ button:hover, .button:hover { filter: brightness(1.05); }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
 .card, .flow { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 22px; padding: 24px; }
 .card.wide { grid-column: 1 / -1; }
-dl { display: grid; grid-template-columns: minmax(120px, .4fr) 1fr; gap: 10px 14px; overflow-wrap: anywhere; }
-dt { color: #8bd4ff; font-weight: 800; }
-dd { margin: 0; color: #d7e1ef; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9rem; }
+dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 14px; }
+dt { color: #8bd4ff; font-weight: 800; overflow-wrap: normal; }
+dd { margin: 0; color: #d7e1ef; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9rem; overflow-wrap: anywhere; }
 label { display: block; margin: 12px 0; color: #cbd7e7; font-weight: 700; }
-input { width: 100%; margin-top: 6px; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.24); color: #f4f7fb; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+input, textarea { width: 100%; margin-top: 6px; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.24); color: #f4f7fb; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+textarea { min-height: 4.6em; resize: vertical; overflow-wrap: anywhere; }
 pre { min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: rgba(0,0,0,.28); border-radius: 16px; color: #d7e1ef; }
 .flow { margin-top: 18px; }
 .flow li { margin: 10px 0; color: #d7e1ef; line-height: 1.55; }
