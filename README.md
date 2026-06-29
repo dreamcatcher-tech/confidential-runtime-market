@@ -17,30 +17,31 @@ The executable v0 is intentionally reduced to two compatible contracts:
 
 ```mermaid
 flowchart LR
-  Owner[Agent owner / principal]
+  Owner[Agent owner principal]
   Publisher[Image publisher]
   Host[Host operator]
-  Phone[Phone / KMS approval]
+  Phone[Phone KMS approval]
   Vault[StateVault]
   Ledger[Reality Ledger]
-  Birth["ARKBirthCertificate\nERC-721: mint + ownerOfAgent"]
-  Market["ARKRuntimeMarketplace\nregisterHost + publishImage\nrequestRuntime + claimRuntime\ncheckpointState + closeRuntime"]
+  Birth[ARKBirthCertificate ERC721]
+  Market[ARKRuntimeMarketplace]
   Bastion[Bastion CVM]
   Agent[Agent CVM]
 
-  Owner -->|mint(agentId, lineageRoot, desirePolicyHash)| Birth
-  Market -->|ownerOfAgent(agentId)| Birth
-  Publisher -->|publishImage(imageId, ociDigest, runtimePolicyDigest)| Market
-  Host -->|registerHost(hostId, allowedHostSetHash, bastionAttestationHash)| Market
-  Owner -->|requestRuntime(agentId, imageId, stateId, unlockPolicyHash)| Market
-  Host -->|claimRuntime(requestId, claimId, attestation, transport key)| Market
-  Host --> Bastion --> Agent
-  Phone -->|scoped unlock decision| Vault
-  Vault -->|off-chain access lease / release receipt| Agent
-  Agent -->|state root + release receipt| Host
-  Host -->|checkpointState(state root, releaseReceiptHash)| Market
-  Host -->|closeRuntime(closureReceiptHash)| Market
-  Market -->|commitments + receipts + anchors| Ledger
+  Owner -->|mint| Birth
+  Market -->|ownerOfAgent| Birth
+  Publisher -->|publishImage| Market
+  Host -->|registerHost| Market
+  Owner -->|requestRuntime| Market
+  Host -->|claimRuntime| Market
+  Host --> Bastion
+  Bastion --> Agent
+  Phone -->|scoped unlock| Vault
+  Vault -->|access lease| Agent
+  Agent -->|state root| Host
+  Host -->|checkpointState| Market
+  Host -->|closeRuntime| Market
+  Market -->|commitment receipts| Ledger
 ```
 
 ## Typical operation sequence
@@ -52,23 +53,23 @@ sequenceDiagram
   participant Publisher as Image publisher
   participant Birth as ARKBirthCertificate
   participant Market as ARKRuntimeMarketplace
-  participant Host as Host/Bastion
-  participant Vault as Phone/KMS/StateVault
+  participant Host as Host Bastion
+  participant Vault as Phone KMS StateVault
   participant Agent as Agent CVM
 
-  Owner->>Birth: mint(agentId, parentAgentId, lineageRoot, desirePolicyHash, birthMetadataHash, uri)
-  Publisher->>Market: publishImage(imageId, ociDigest, runtimePolicyDigest)
-  Host->>Market: registerHost(hostId, allowedHostSetHash, bastionAttestationHash, hostMetadataHash)
-  Owner->>Market: requestRuntime(requestId, agentId, imageId, stateId, allowedHostSetHash, desiredSeconds, maxPricePerSecond, unlockPolicyHash)
-  Market->>Birth: ownerOfAgent(agentId)
-  Birth-->>Market: current ERC-721 owner
-  Host->>Market: claimRuntime(requestId, claimId, hostId, agentCvmAttestationHash, vmTransportPubkeyHash, pricePerSecond)
-  Host->>Agent: boot/assign measured Agent CVM
-  Agent->>Vault: request scoped state access off-chain
-  Vault-->>Agent: encrypted lease; releaseReceiptHash is public-safe
-  Agent-->>Host: state root + releaseReceiptHash
-  Host->>Market: checkpointState(claimId, stateCommitmentId, version, rootHash, previousRootHash, writerAttestationHash, releaseReceiptHash, releaseExpiry)
-  Host->>Market: closeRuntime(claimId, reason, finalStateCommitmentId, closureReceiptHash)
+  Owner->>Birth: mint
+  Publisher->>Market: publishImage
+  Host->>Market: registerHost
+  Owner->>Market: requestRuntime
+  Market->>Birth: ownerOfAgent
+  Birth-->>Market: current ERC721 owner
+  Host->>Market: claimRuntime
+  Host->>Agent: boot measured Agent CVM
+  Agent->>Vault: request scoped state access
+  Vault-->>Agent: encrypted access lease
+  Agent-->>Host: state root and release receipt
+  Host->>Market: checkpointState
+  Host->>Market: closeRuntime
 ```
 
 ## Diagram/spec conformance
@@ -76,6 +77,7 @@ sequenceDiagram
 The README diagrams are part of the feature contract. `features/reconciliation-invariants.feature` requires them to stay aligned with the executable contracts, and `python3 scripts/validate_specs.py` checks that:
 
 - the README has both a Mermaid `flowchart` and `sequenceDiagram`;
+- the diagrams stay GitHub-renderable by avoiding argument-list labels, escaped newlines, chained flowchart arrows, and punctuation in edge/message text that GitHub's Mermaid renderer rejects;
 - the diagrams name `ARKBirthCertificate`, `ARKRuntimeMarketplace`, `Reality Ledger`, `Bastion`, `Agent CVM`, and `StateVault`;
 - the diagrams include the current core function names: `mint`, `ownerOfAgent`, `registerHost`, `publishImage`, `requestRuntime`, `claimRuntime`, `checkpointState`, and `closeRuntime`;
 - the retired monolithic contract/function names are not reintroduced into active docs/code.

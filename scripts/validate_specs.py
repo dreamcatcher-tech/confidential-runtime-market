@@ -71,6 +71,31 @@ def mermaid_blocks(markdown: str) -> list[str]:
     return re.findall(r"```mermaid\s*\n(.*?)```", markdown, re.S)
 
 
+def validate_github_mermaid_safety(blocks: list[str]) -> None:
+    """Guard against Mermaid syntax that GitHub renders as raw error panels.
+
+    GitHub's Mermaid renderer is stricter than many Mermaid playground examples for
+    flowchart edge labels and sequence messages. Keep README diagrams simple: core
+    operation names, no argument lists, no escaped newlines, and no punctuation that
+    the live renderer has rejected in edge/message text.
+    """
+    unsafe = re.compile(r"[(),+;/]")
+    for block_index, block in enumerate(blocks, start=1):
+        if "\\n" in block:
+            fail(f"README Mermaid block {block_index} uses escaped newlines; use simple one-line labels for GitHub rendering")
+        for line_no, raw_line in enumerate(block.splitlines(), start=1):
+            line = raw_line.strip()
+            if line.count("-->") > 1:
+                fail(f"README Mermaid block {block_index} line {line_no} chains flowchart arrows; split into one edge per line")
+            for label in re.findall(r"\|([^|]+)\|", line):
+                if unsafe.search(label):
+                    fail(f"README Mermaid block {block_index} line {line_no} has GitHub-unsafe edge label punctuation: {label}")
+            if "->" in line and ":" in line and not line.startswith("participant "):
+                message = line.split(":", 1)[1].strip()
+                if unsafe.search(message):
+                    fail(f"README Mermaid block {block_index} line {line_no} has GitHub-unsafe sequence message punctuation: {message}")
+
+
 def main() -> None:
     if not FEATURE_DIR.exists():
         fail("features/ directory is missing")
@@ -134,6 +159,7 @@ def main() -> None:
     if not any("sequenceDiagram" in block for block in blocks):
         fail("README must include a Mermaid sequence diagram")
     diagram_text = "\n".join(blocks)
+    validate_github_mermaid_safety(blocks)
     diagram_terms = [
         "ARKBirthCertificate", "ARKRuntimeMarketplace", "Reality Ledger", "Bastion", "Agent CVM", "StateVault",
         "mint", "ownerOfAgent", "registerHost", "publishImage", "requestRuntime", "claimRuntime", "checkpointState", "closeRuntime",
